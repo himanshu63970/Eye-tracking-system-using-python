@@ -1,0 +1,43 @@
+import cv2
+import numpy as np
+
+# Load the pre-trained eye cascade classifier
+eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_eye.xml')
+
+# Start the default camera
+cap = cv2.VideoCapture(0)
+
+# Create a window to display the video feed
+cv2.namedWindow('Eye Tracking')
+
+while cap.isOpened():
+    ret, frame = cap.read()
+    if not ret:
+        break
+
+    # Convert the frame to grayscale
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+    # Detect eyes in the frame
+    eyes = eye_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+
+    # Iterate over detected eyes
+    for (ex, ey, ew, eh) in eyes:
+        # Draw rectangles around the eyes
+        cv2.rectangle(frame, (ex, ey), (ex + ew, ey + eh), (0, 255, 0), 2)
+
+        # Calculate the center of the eyes
+        eye_center_x, eye_center_y = ex + ew // 2, ey + eh // 2
+
+        # Display the eye center coordinates
+        cv2.putText(frame, f"Eye Center: ({eye_center_x}, {eye_center_y})", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
+
+    # Display the frame
+    cv2.imshow('Eye Tracking', frame)
+
+    # Break the loop when 'q' key is pressed
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+cap.release()
+cv2.destroyAllWindows()
